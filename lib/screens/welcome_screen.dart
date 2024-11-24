@@ -77,20 +77,30 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             SizedBox(
               width: 250,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ShareCodeScreen()),
-                  );
-                },
-                style:
-                    ElevatedButton.styleFrom(padding: const EdgeInsets.all(12)),
-                child: Text("Start Session".toUpperCase(),
-                    style: textTheme.headlineSmall?.copyWith(
-                      color: colorScheme.onPrimary,
-                    )),
-              ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ShareCodeScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(12)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                          width: 50,
+                          child: Icon(Icons.forward, color: Colors.red)),
+                      SizedBox(
+                        width: 130,
+                        child: Text("Start Session".toUpperCase(),
+                            style: textTheme.headlineSmall?.copyWith(
+                              color: colorScheme.onPrimary,
+                            )),
+                      )
+                    ],
+                  )),
             ),
             const SizedBox(
               height: 10,
@@ -98,20 +108,30 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             SizedBox(
               width: 250,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const EnterCodeScreen()),
-                  );
-                },
-                style:
-                    ElevatedButton.styleFrom(padding: const EdgeInsets.all(12)),
-                child: Text("Enter Code".toUpperCase(),
-                    style: textTheme.headlineSmall?.copyWith(
-                      color: colorScheme.onPrimary,
-                    )),
-              ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const EnterCodeScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(12)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                          width: 50,
+                          child: Icon(Icons.code, color: Colors.red)),
+                      SizedBox(
+                        width: 130,
+                        child: Text("Enter Code".toUpperCase(),
+                            style: textTheme.headlineSmall?.copyWith(
+                              color: colorScheme.onPrimary,
+                            )),
+                      )
+                    ],
+                  )),
             ),
           ],
         ),
