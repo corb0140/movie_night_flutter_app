@@ -12,6 +12,7 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
+  // ignore: unused_field
   String? _deviceId;
 
   @override
@@ -129,7 +130,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             style: textTheme.headlineSmall?.copyWith(
                               color: colorScheme.onPrimary,
                             )),
-                      )
+                      ),
                     ],
                   )),
             ),
