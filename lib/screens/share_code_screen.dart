@@ -59,13 +59,14 @@ class _ShareCodeScreenState extends State<ShareCodeScreen> {
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 }
+                final data = snapshot.data as List<Data>;
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (snapshot.hasData && snapshot.data != null)
                       Column(
                         children: [
-                          Text('Code: ${snapshot.data![0].code}',
+                          Text('Code: ${data[0].code}',
                               style: textTheme.headlineLarge
                                   ?.copyWith(color: colorScheme.onPrimary)),
                           const SizedBox(height: 20),
@@ -89,7 +90,7 @@ class _ShareCodeScreenState extends State<ShareCodeScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => MovieSelectionScreen(
-                                      sessionId: snapshot.data![0].sessionId),
+                                      sessionId: data[0].sessionId),
                                 ),
                               );
                             } else {
