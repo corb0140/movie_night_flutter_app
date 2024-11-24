@@ -24,7 +24,9 @@ class AppTheme {
                 const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             bodyLarge: const TextStyle(fontSize: 16),
             bodyMedium: const TextStyle(fontSize: 14),
-            bodySmall: const TextStyle(fontSize: 12),
+            bodySmall: const TextStyle(
+              fontSize: 12,
+            ),
           ),
       useMaterial3: true,
       fontFamily: 'Montserrat',

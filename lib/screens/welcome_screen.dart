@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'enter_code_screen.dart';
+import 'share_code_screen.dart';
 import 'package:platform_device_id/platform_device_id.dart';
-import '../device_id_manager.dart';
+import '../utils/device_id_manager.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -63,14 +65,55 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         backgroundColor: const Color.fromARGB(84, 0, 0, 0),
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(50.0, 0, 50.0, 0),
-          child: Text(
-            _deviceId ?? 'Loading...',
-            style: textTheme.headlineMedium?.copyWith(
-              color: colorScheme.primary,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+                padding: const EdgeInsets.fromLTRB(50, 100, 50, 50),
+                child: Text("Select An Option",
+                    style: textTheme.headlineMedium?.copyWith(
+                      color: colorScheme.primary,
+                    ))),
+            SizedBox(
+              width: 250,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ShareCodeScreen()),
+                  );
+                },
+                style:
+                    ElevatedButton.styleFrom(padding: const EdgeInsets.all(12)),
+                child: Text("Start Session".toUpperCase(),
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: colorScheme.onPrimary,
+                    )),
+              ),
             ),
-          ),
+            const SizedBox(
+              height: 10,
+            ),
+            SizedBox(
+              width: 250,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const EnterCodeScreen()),
+                  );
+                },
+                style:
+                    ElevatedButton.styleFrom(padding: const EdgeInsets.all(12)),
+                child: Text("Enter Code".toUpperCase(),
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: colorScheme.onPrimary,
+                    )),
+              ),
+            ),
+          ],
         ),
       ),
     );
