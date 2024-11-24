@@ -20,3 +20,26 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+fonts:
+  - family: Montserrat
+    fonts:
+      - asset: assets/fonts/Montserrat/static/Montserrat-ExtraLight.ttf
+        weight: 200
+      - asset: assets/fonts/Montserrat/static/Montserrat-Light.ttf
+        weight: 300
+      - asset: assets/fonts/Montserrat/static/Montserrat-Regular.ttf
+        weight: 400
+      - asset: assets/fonts/Montserrat/static/Montserrat-Bold.ttf
+        weight: 700
+      - asset: assets/fonts/Montserrat/static/Montserrat-Italic.ttf
+        weight: 400
+        style: italic
+      - asset: assets/fonts/Montserrat/static/Montserrat-SemiBoldItalic.ttf
+        weight: 600
+        style: italic
+      - asset: assets/fonts/Montserrat/static/Montserrat-BoldItalic.ttf
+        weight: 700
+        style: italic
+
+uses-material-design: true
