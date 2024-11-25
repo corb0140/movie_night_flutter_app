@@ -53,17 +53,49 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
             Dismissible(
                 key: Key(movie.id.toString()),
                 direction: DismissDirection.horizontal,
-                onDismissed: (direction) {
-                  setState(() {
-                    if (direction == DismissDirection.startToEnd) {
-                      currentIndex = (currentIndex > 0) ? currentIndex - 1 : 0;
-                    } else if (direction == DismissDirection.endToStart) {
-                      currentIndex = (currentIndex < movies.length - 1)
-                          ? currentIndex + 1
-                          : movies.length - 1;
-                    }
-                  });
+                onDismissed: (direction) async {
+                  final bool vote =
+                      (direction == DismissDirection.startToEnd) ? true : false;
+                  final int movieId = movies[currentIndex].id;
+                  final String sessionId = widget.sessionId;
+
+                  try {
+                    await voteForMovie(sessionId, movieId, vote);
+                    setState(() {
+                      if (direction == DismissDirection.startToEnd) {
+                        currentIndex = (currentIndex < movies.length - 1)
+                            ? currentIndex + 1
+                            : 0;
+                      } else if (direction == DismissDirection.endToStart) {
+                        currentIndex = (currentIndex < movies.length - 1)
+                            ? currentIndex + 1
+                            : 0;
+                      }
+                    });
+                  } catch (error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to submit vote: $error'),
+                      ),
+                    );
+                  }
                 },
+                background: Container(
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.thumb_up,
+                    color: Colors.white,
+                    size: 50,
+                  ),
+                ),
+                secondaryBackground: Container(
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.thumb_down,
+                    color: Colors.white,
+                    size: 50,
+                  ),
+                ),
                 child: Container(
                   height: 450,
                   width: 350,
@@ -74,10 +106,8 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
                   child: Column(children: [
                     ClipRRect(
                         borderRadius: const BorderRadius.only(
-                          topLeft:
-                              Radius.circular(10), // Top-left corner radius
-                          topRight:
-                              Radius.circular(10), // Top-right corner radius
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
                         ),
                         child: Image.network(
                           'https://image.tmdb.org/t/p/w500${movie.image}',
@@ -125,6 +155,41 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
       return results.map((dynamic data) => Movies.fromJson(data)).toList();
     } else {
       throw Exception('Failed to load data from the internet');
+    }
+  }
+
+  Future<void> voteForMovie(String sessionId, int movieId, bool vote) async {
+    final url = Uri.parse(
+        'https://movie-night-api.onrender.com/vote-movie?session_id=$sessionId&movie_id=$movieId&vote=$vote');
+
+    final response = await http.get(
+      url.replace(queryParameters: {
+        'session_id': sessionId,
+        'movie_id': movieId.toString(),
+        'vote': vote.toString(),
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
+      final match = jsonResponse['data']['match'];
+
+      if (match) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Match found for movie ID: $movieId'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No match found for movie ID: $movieId'),
+          ),
+        );
+      }
+    } else {
+      throw Exception(
+          'Failed to vote for the movie. Status code: ${response.statusCode}');
     }
   }
 }
