@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'movie_selection_screen.dart';
 import '../utils/device_id_manager.dart';
+import '../utils/http_helper.dart';
 
 class ShareCodeScreen extends StatefulWidget {
   const ShareCodeScreen({super.key});
@@ -17,11 +18,12 @@ class ShareCodeScreen extends StatefulWidget {
 class _ShareCodeScreenState extends State<ShareCodeScreen> {
   Future<List<Data>> startSession() async {
     String? deviceId = await DeviceIDManager.getDeviceId();
+    final httpHelper = HttpHelper();
+    final startSession = httpHelper.startSessionUrl;
 
     if (deviceId != null) {
       var response = await http.get(
-        Uri.parse(
-            'https://movie-night-api.onrender.com/start-session?device_id=$deviceId'),
+        Uri.parse('$startSession?device_id=$deviceId'),
       );
 
       if (response.statusCode == 200) {

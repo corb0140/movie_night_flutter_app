@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'welcome_screen.dart';
 import '../utils/api_key.dart';
+import '../utils/http_helper.dart';
 
 class MovieSelectionScreen extends StatefulWidget {
   final String sessionId;
@@ -58,16 +60,20 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
                       (direction == DismissDirection.startToEnd) ? true : false;
                   final int movieId = movies[currentIndex].id;
                   final String sessionId = widget.sessionId;
+                  final String name = movies[currentIndex].name;
+                  final double voteAverage = movies[currentIndex].voteAverage;
+                  final String releaseDate = movies[currentIndex].releaseDate;
 
                   try {
-                    await voteForMovie(sessionId, movieId, vote);
+                    await voteForMovie(sessionId, movieId, vote, name,
+                        voteAverage, releaseDate);
                     setState(() {
                       if (direction == DismissDirection.startToEnd) {
-                        currentIndex = (currentIndex < movies.length - 1)
+                        currentIndex = (currentIndex <= movies.length - 1)
                             ? currentIndex + 1
                             : 0;
                       } else if (direction == DismissDirection.endToStart) {
-                        currentIndex = (currentIndex < movies.length - 1)
+                        currentIndex = (currentIndex <= movies.length - 1)
                             ? currentIndex + 1
                             : 0;
                       }
@@ -146,8 +152,10 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
   }
 
   Future<List<Movies>> fetchMovies() async {
-    var response = await http.get(Uri.parse(
-        'https://api.themoviedb.org/3/movie/popular?api_key=$tmdbApiKey&page=2'));
+    final httpHelper = HttpHelper();
+    final getMoviesUrl = httpHelper.getMoviesUrl;
+
+    var response = await http.get(Uri.parse(getMoviesUrl));
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
@@ -158,9 +166,13 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
     }
   }
 
-  Future<void> voteForMovie(String sessionId, int movieId, bool vote) async {
+  Future<void> voteForMovie(String sessionId, int movieId, bool vote,
+      String name, double voteAverage, String releaseDate) async {
+    final httpHelper = HttpHelper();
+    final voteMovieUrl = httpHelper.voteMovieUrl;
+
     final url = Uri.parse(
-        'https://movie-night-api.onrender.com/vote-movie?session_id=$sessionId&movie_id=$movieId&vote=$vote');
+        '$voteMovieUrl?session_id=$sessionId&movie_id=$movieId&vote=$vote');
 
     final response = await http.get(
       url.replace(queryParameters: {
@@ -173,18 +185,47 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
       final match = jsonResponse['data']['match'];
+      final movieID = jsonResponse['data']['movie_id'];
+      final message = jsonResponse['data']['message'];
 
-      if (match) {
+      if (match == true && movieID) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Match found for movie ID: $movieId'),
-          ),
+              content: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text('Match found for movie ID: $movieId'),
+                  Text('Name: $name'),
+                  Text('Vote Average: $voteAverage'),
+                  Text('Release Date: $releaseDate'),
+                  Text("Message: $message"),
+                ],
+              ),
+              action: SnackBarAction(
+                  label: 'Ok',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WelcomeScreen(),
+                      ),
+                    );
+                  })),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('No match found for movie ID: $movieId'),
-          ),
+              content: Column(
+                children: [
+                  Text('No match found for movie ID: $movieId'),
+                  Text("Message: $message"),
+                ],
+              ),
+              action: SnackBarAction(
+                  label: 'Close',
+                  onPressed: () {
+                    print('Closed');
+                  })),
         );
       }
     } else {
