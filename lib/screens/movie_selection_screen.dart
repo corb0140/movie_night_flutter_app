@@ -17,12 +17,28 @@ class MovieSelectionScreen extends StatefulWidget {
 
 class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
   int currentIndex = 0;
-  late Future<List<Movies>> movieSwipe;
+  List<Movies> _movieData = [];
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    movieSwipe = fetchMovies();
+    _fetchInitialMovies();
+  }
+
+  Future<void> _fetchInitialMovies() async {
+    try {
+      final initialMovies = await fetchMovies();
+      setState(() {
+        _movieData.addAll(initialMovies);
+      });
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load movies: $error'),
+        ),
+      );
+    }
   }
 
   Future<List<Movies>> fetchMovies() async {
@@ -34,13 +50,43 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
       final results = jsonResponse['results'] as List<dynamic>;
-      return results.map((dynamic data) => Movies.fromJson(data)).toList();
+      return results
+          .take(3)
+          .map((dynamic data) => Movies.fromJson(data))
+          .toList();
     } else {
       throw Exception('Failed to load data from the internet');
     }
   }
 
-  Future<void> voteForMovie(String sessionId, int movieId, bool vote,
+  Future<void> fetchMoreMovies() async {
+    if (isLoading) return;
+    setState(() {
+      isLoading = true;
+    });
+
+    final httpHelper = HttpHelper();
+    final getMoreMoviesUrl = httpHelper.getMoreMoviesUrl;
+
+    var response = await http.get(Uri.parse(getMoreMoviesUrl));
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
+      final results = jsonResponse['results'] as List<dynamic>;
+      final newMovies = results
+          .take(3)
+          .map((data) => Movies.fromJson(data as Map<String, dynamic>))
+          .toList();
+
+      setState(() {
+        _movieData.addAll(newMovies);
+      });
+    } else {
+      throw Exception('Failed to load data from the internet');
+    }
+  }
+
+  Future<void> voteForMovie(String sessionId, int movieId, String vote,
       String name, double voteAverage, String releaseDate) async {
     final httpHelper = HttpHelper();
     final voteMovieUrl = httpHelper.voteMovieUrl;
@@ -130,7 +176,8 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
           } else if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           }
-          final movies = snapshot.data as List<Movies>;
+
+          final movies = _movieData;
           final movie = movies[currentIndex];
 
           return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -138,8 +185,8 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
                 key: Key(movie.id.toString()),
                 direction: DismissDirection.horizontal,
                 onDismissed: (direction) async {
-                  final bool vote =
-                      (direction == DismissDirection.startToEnd) ? true : false;
+                  final String vote =
+                      (direction == DismissDirection.startToEnd) ? 'yes' : 'no';
                   final int movieId = movies[currentIndex].id;
                   final String sessionId = widget.sessionId;
                   final String name = movies[currentIndex].name;
@@ -151,15 +198,19 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
                         voteAverage, releaseDate);
                     setState(() {
                       if (direction == DismissDirection.startToEnd) {
-                        currentIndex = (currentIndex <= movies.length - 1)
+                        currentIndex = (currentIndex < movies.length - 1)
                             ? currentIndex + 1
                             : 0;
                       } else if (direction == DismissDirection.endToStart) {
-                        currentIndex = (currentIndex <= movies.length - 1)
+                        currentIndex = (currentIndex < movies.length - 1)
                             ? currentIndex + 1
                             : 0;
                       }
                     });
+
+                    if (currentIndex >= _movieData.length - 1) {
+                      await fetchMoreMovies();
+                    }
                   } catch (error) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

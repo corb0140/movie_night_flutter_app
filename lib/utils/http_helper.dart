@@ -11,4 +11,7 @@ class HttpHelper {
 
   final String getMoviesUrl =
       'https://api.themoviedb.org/3/movie/popular?api_key=$tmdbApiKey&page=2';
+
+  final String getMoreMoviesUrl =
+      'https://api.themoviedb.org/3/movie/upcoming?api_key=$tmdbApiKey&page=2';
 }
