@@ -14,11 +14,11 @@ class AppTheme {
           brightness: Brightness.light),
       textTheme: ThemeData.light().textTheme.copyWith(
             displayLarge:
-                const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             displayMedium:
-                const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             displaySmall:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             headlineLarge:
                 const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
             headlineMedium:

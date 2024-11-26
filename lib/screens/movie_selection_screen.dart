@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'welcome_screen.dart';
-import '../utils/api_key.dart';
 import '../utils/http_helper.dart';
 
 class MovieSelectionScreen extends StatefulWidget {
@@ -24,6 +23,89 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
   void initState() {
     super.initState();
     movieSwipe = fetchMovies();
+  }
+
+  Future<List<Movies>> fetchMovies() async {
+    final httpHelper = HttpHelper();
+    final getMoviesUrl = httpHelper.getMoviesUrl;
+
+    var response = await http.get(Uri.parse(getMoviesUrl));
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
+      final results = jsonResponse['results'] as List<dynamic>;
+      return results.map((dynamic data) => Movies.fromJson(data)).toList();
+    } else {
+      throw Exception('Failed to load data from the internet');
+    }
+  }
+
+  Future<void> voteForMovie(String sessionId, int movieId, bool vote,
+      String name, double voteAverage, String releaseDate) async {
+    final httpHelper = HttpHelper();
+    final voteMovieUrl = httpHelper.voteMovieUrl;
+
+    final url = Uri.parse(
+        '$voteMovieUrl?session_id=$sessionId&movie_id=$movieId&vote=$vote');
+
+    final response = await http.get(
+      url.replace(queryParameters: {
+        'session_id': sessionId,
+        'movie_id': movieId.toString(),
+        'vote': vote.toString(),
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
+      final match = jsonResponse['data']['match'];
+      final movieID = jsonResponse['data']['movie_id'];
+      final message = jsonResponse['data']['message'];
+
+      if (match == true && movieID) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text('Match found for movie ID: $movieId'),
+                  Text('Name: $name'),
+                  Text('Vote Average: $voteAverage'),
+                  Text('Release Date: $releaseDate'),
+                  Text("Message: $message"),
+                ],
+              ),
+              action: SnackBarAction(
+                  label: 'Ok',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WelcomeScreen(),
+                      ),
+                    );
+                  })),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Column(
+                children: [
+                  Text('No match found for movie ID: $movieId'),
+                  Text("Message: $message"),
+                ],
+              ),
+              action: SnackBarAction(
+                  label: 'Close',
+                  onPressed: () {
+                    print('Closed');
+                  })),
+        );
+      }
+    } else {
+      throw Exception(
+          'Failed to vote for the movie. Status code: ${response.statusCode}');
+    }
   }
 
   @override
@@ -149,89 +231,6 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
         },
       )),
     );
-  }
-
-  Future<List<Movies>> fetchMovies() async {
-    final httpHelper = HttpHelper();
-    final getMoviesUrl = httpHelper.getMoviesUrl;
-
-    var response = await http.get(Uri.parse(getMoviesUrl));
-
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
-      final results = jsonResponse['results'] as List<dynamic>;
-      return results.map((dynamic data) => Movies.fromJson(data)).toList();
-    } else {
-      throw Exception('Failed to load data from the internet');
-    }
-  }
-
-  Future<void> voteForMovie(String sessionId, int movieId, bool vote,
-      String name, double voteAverage, String releaseDate) async {
-    final httpHelper = HttpHelper();
-    final voteMovieUrl = httpHelper.voteMovieUrl;
-
-    final url = Uri.parse(
-        '$voteMovieUrl?session_id=$sessionId&movie_id=$movieId&vote=$vote');
-
-    final response = await http.get(
-      url.replace(queryParameters: {
-        'session_id': sessionId,
-        'movie_id': movieId.toString(),
-        'vote': vote.toString(),
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
-      final match = jsonResponse['data']['match'];
-      final movieID = jsonResponse['data']['movie_id'];
-      final message = jsonResponse['data']['message'];
-
-      if (match == true && movieID) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text('Match found for movie ID: $movieId'),
-                  Text('Name: $name'),
-                  Text('Vote Average: $voteAverage'),
-                  Text('Release Date: $releaseDate'),
-                  Text("Message: $message"),
-                ],
-              ),
-              action: SnackBarAction(
-                  label: 'Ok',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WelcomeScreen(),
-                      ),
-                    );
-                  })),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Column(
-                children: [
-                  Text('No match found for movie ID: $movieId'),
-                  Text("Message: $message"),
-                ],
-              ),
-              action: SnackBarAction(
-                  label: 'Close',
-                  onPressed: () {
-                    print('Closed');
-                  })),
-        );
-      }
-    } else {
-      throw Exception(
-          'Failed to vote for the movie. Status code: ${response.statusCode}');
-    }
   }
 }
 
