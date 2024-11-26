@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'enter_code_screen.dart';
 import 'share_code_screen.dart';
 import 'package:platform_device_id/platform_device_id.dart';
-import '../utils/device_id_manager.dart';
+import '../utils/id_manager.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

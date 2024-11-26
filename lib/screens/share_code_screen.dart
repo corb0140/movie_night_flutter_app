@@ -5,7 +5,7 @@ import 'dart:convert';
 // ignore: unused_import
 import 'dart:io';
 import 'movie_selection_screen.dart';
-import '../utils/device_id_manager.dart';
+import '../utils/id_manager.dart';
 import '../utils/http_helper.dart';
 
 class ShareCodeScreen extends StatefulWidget {
@@ -16,6 +16,46 @@ class ShareCodeScreen extends StatefulWidget {
 }
 
 class _ShareCodeScreenState extends State<ShareCodeScreen> {
+  String? _sessionId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSessionId();
+  }
+
+  Future<void> _initializeSessionId() async {
+    try {
+      // Check if a device ID is already saved
+      bool hasSavedSessionId = await SessionIDManager.hasSessionId();
+      // print(hasSavedSessionId);
+
+      if (!hasSavedSessionId) {
+        // Fetch Session ID
+        List<Data> sessionData = await startSession();
+        if (sessionData.isNotEmpty) {
+          _sessionId = sessionData[0].sessionId;
+
+          // Save the session ID
+          await SessionIDManager.saveSessionId(_sessionId!);
+          print("Session ID saved: $_sessionId");
+        } else {
+          throw Exception("No session data returned.");
+        }
+      }
+
+      // Retrieve the device ID
+      final storedSessionId = await SessionIDManager.getSessionId();
+      setState(() {
+        _sessionId = storedSessionId;
+      });
+    } catch (e) {
+      setState(() {
+        _sessionId = 'Error fetching Session ID: $e';
+      });
+    }
+  }
+
   Future<List<Data>> startSession() async {
     String? deviceId = await DeviceIDManager.getDeviceId();
     final httpHelper = HttpHelper();
@@ -62,6 +102,8 @@ class _ShareCodeScreenState extends State<ShareCodeScreen> {
                   return Text('Error: ${snapshot.error}');
                 }
                 final data = snapshot.data as List<Data>;
+                _sessionId = data[0].sessionId;
+
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

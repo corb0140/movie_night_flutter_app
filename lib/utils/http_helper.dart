@@ -1,5 +1,5 @@
 import '../utils/api_key.dart';
-import '../utils/device_id_manager.dart';
+import 'id_manager.dart';
 
 class HttpHelper {
   final String startSessionUrl =

@@ -21,3 +21,25 @@ class DeviceIDManager {
     return prefs.containsKey(_deviceIdKey);
   }
 }
+
+class SessionIDManager {
+  static const String _sessionIdKey = 'session_id';
+
+  // Save the session ID
+  static Future<void> saveSessionId(String sessionId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_sessionIdKey, sessionId);
+  }
+
+  // Retrieve the session ID
+  static Future<String?> getSessionId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_sessionIdKey);
+  }
+
+  // Check if a session ID already exists
+  static Future<bool> hasSessionId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey(_sessionIdKey);
+  }
+}
