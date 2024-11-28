@@ -2,6 +2,7 @@ import 'dart:convert';
 // ignore: unused_import
 import 'dart:io';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import 'welcome_screen.dart';
 import '../utils/http_helper.dart';
@@ -17,7 +18,7 @@ class MovieSelectionScreen extends StatefulWidget {
 
 class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
   int currentIndex = 0;
-  List<Movies> _movieData = [];
+  final List<Movies> _movieData = [];
   bool isLoading = false;
 
   @override
@@ -86,7 +87,7 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
     }
   }
 
-  Future<void> voteForMovie(String sessionId, int movieId, String vote,
+  Future<void> voteForMovie(String sessionId, int movieId, bool vote,
       String name, double voteAverage, String releaseDate) async {
     final httpHelper = HttpHelper();
     final voteMovieUrl = httpHelper.voteMovieUrl;
@@ -94,21 +95,15 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
     final url = Uri.parse(
         '$voteMovieUrl?session_id=$sessionId&movie_id=$movieId&vote=$vote');
 
-    final response = await http.get(
-      url.replace(queryParameters: {
-        'session_id': sessionId,
-        'movie_id': movieId.toString(),
-        'vote': vote.toString(),
-      }),
-    );
+    final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
       final match = jsonResponse['data']['match'];
-      final movieID = jsonResponse['data']['movie_id'];
+      // final movieID = jsonResponse['data']['movie_id'];
       final message = jsonResponse['data']['message'];
 
-      if (match == true && movieID) {
+      if (match) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Column(
@@ -185,8 +180,8 @@ class _MovieSelectionScreenState extends State<MovieSelectionScreen> {
                 key: Key(movie.id.toString()),
                 direction: DismissDirection.horizontal,
                 onDismissed: (direction) async {
-                  final String vote =
-                      (direction == DismissDirection.startToEnd) ? 'yes' : 'no';
+                  final bool vote =
+                      (direction == DismissDirection.startToEnd) ? true : false;
                   final int movieId = movies[currentIndex].id;
                   final String sessionId = widget.sessionId;
                   final String name = movies[currentIndex].name;
